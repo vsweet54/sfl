@@ -106,20 +106,25 @@ export default function Home() {
         body: JSON.stringify({ url: target }),
       });
 
-      // Step 4: Ekstraksi Safelink
+      // Step 4: Ekstraksi URL
       setCurrentStep(3);
-      setStepTitle("EKSTRAKSI SAFELINK...");
+      setStepTitle("EKSTRAKSI URL...");
       const resData = await response.json();
 
       if (!response.ok || resData.success === false) {
-        const errMsg = resData.message || resData?.data?.message || "Gagal membypass link.";
+        const errMsg =
+          resData.message ||
+          resData?.data?.message ||
+          (response.status === 422 ? "Domain ini belum didukung oleh bypass tool." : "Gagal membypass link.");
         throw new Error(errMsg);
       }
 
       // Step 5: Selesai
+      // route.js sekarang selalu mengembalikan finalUrl di top-level
       const finalDestination =
-        resData?.data?.data?.finalUrl ||
         resData?.finalUrl ||
+        resData?.data?.data?.finalUrl ||
+        resData?.data?.finalUrl ||
         resData?.result;
 
       if (!finalDestination) {
@@ -186,7 +191,7 @@ export default function Home() {
       )
     },
     {
-      label: "Ekstraksi Safelink",
+      label: "Ekstraksi URL",
       icon: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
@@ -236,7 +241,7 @@ export default function Home() {
               />
             </div>
             <div>
-              <div style={{ fontWeight: "700", fontSize: "0.95rem", color: "#f8fafc" }}>SFL Bypasser</div>
+              <div style={{ fontWeight: "700", fontSize: "0.95rem", color: "#f8fafc" }}>NEO Bypasser</div>
               <div style={{ fontSize: "0.72rem", color: "#64748b" }}>by NEO</div>
             </div>
           </div>
@@ -253,8 +258,8 @@ export default function Home() {
           <div style={{ display: "inline-block", background: "rgba(6, 182, 212, 0.08)", border: "1px solid rgba(6, 182, 212, 0.22)", color: "#06b6d4", fontSize: "0.7rem", fontWeight: "600", padding: "3px 10px", borderRadius: "100px", marginBottom: "8px" }}>
             Instant Bypass
           </div>
-          <h1 style={{ fontSize: "1.45rem", fontWeight: "700", margin: "0 0 6px 0" }}>Bypass Tautan Safelink</h1>
-          <p style={{ fontSize: "0.84rem", color: "#94a3b8", margin: 0 }}>Dapatkan tautan tujuan langsung secara instan tanpa iklan atau waktu tunggu.</p>
+          <h1 style={{ fontSize: "1.45rem", fontWeight: "700", margin: "0 0 6px 0" }}>Multi Bypass Tool</h1>
+          <p style={{ fontSize: "0.84rem", color: "#94a3b8", margin: 0 }}>Auto-detect & bypass safelink, shortlink, locker, paste, dan key system secara instan.</p>
         </section>
 
         {/* Input & Action Card */}
@@ -262,7 +267,7 @@ export default function Home() {
           <div style={{ display: "flex", alignItems: "center", background: "#090a0f", border: "1px solid #1d2232", borderRadius: "10px", padding: "4px 8px 4px 12px", gap: "6px" }}>
             <input
               type="text"
-              placeholder="Tempel link safelink..."
+              placeholder="Tempel link target (safelink, shortlink, paste...)..."
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", outline: "none", color: "#f8fafc", fontSize: "0.85rem", padding: "6px 0" }}
@@ -432,7 +437,7 @@ export default function Home() {
               </span>
               <div>
                 <b style={{ display: "block", fontSize: "0.84rem", color: "#f8fafc", marginBottom: "2px" }}>Salin Tautan</b>
-                <p style={{ margin: 0, fontSize: "0.75rem", color: "#94a3b8", lineHeight: "1.4" }}>Salin link safelink SFL target yang ingin Anda lewati.</p>
+                <p style={{ margin: 0, fontSize: "0.75rem", color: "#94a3b8", lineHeight: "1.4" }}>Salin link target: safelink, shortlink, locker, paste, atau key system yang ingin di-bypass.</p>
               </div>
             </div>
 
@@ -479,7 +484,7 @@ export default function Home() {
 
         {/* Footer */}
         <footer style={{ textAlign: "center", color: "#64748b", fontSize: "0.72rem", marginTop: "auto", paddingBottom: "10px" }}>
-          SFL Bypasser • Crafted by <b>NEO</b>
+          NEO Bypasser • Crafted by <b>NEO</b>
         </footer>
 
       </div>
