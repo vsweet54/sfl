@@ -6,7 +6,8 @@ export default function Home() {
   const [url, setUrl] = useState("");
   const [status, setStatus] = useState({ type: "normal", text: "Siap memproses tautan target." });
   const [loading, setLoading] = useState(false);
-  const [currentStep, setCurrentStep] = useState(-1);
+  const [showProgress, setShowProgress] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
   const [stepTitle, setStepTitle] = useState("MEMBACA LINK...");
   const [timerText, setTimerText] = useState("0.0s");
   const [result, setResult] = useState(null);
@@ -17,7 +18,6 @@ export default function Home() {
   const timerRef = useRef(null);
   const startTimeRef = useRef(0);
 
-  // Ambil riwayat dari LocalStorage saat halaman pertama kali dimuat
   useEffect(() => {
     try {
       const saved = JSON.parse(localStorage.getItem("sfl_history") || "[]");
@@ -42,7 +42,6 @@ export default function Home() {
     if (timerRef.current) clearInterval(timerRef.current);
   };
 
-  // Tempel link langsung dari clipboard
   const handlePaste = async () => {
     try {
       const text = await navigator.clipboard.readText();
@@ -55,7 +54,6 @@ export default function Home() {
     }
   };
 
-  // Salin link ke clipboard
   const handleCopy = async (textToCopy) => {
     try {
       await navigator.clipboard.writeText(textToCopy);
@@ -66,13 +64,11 @@ export default function Home() {
     }
   };
 
-  // Hapus semua riwayat
   const handleClearHistory = () => {
     localStorage.removeItem("sfl_history");
     setHistory([]);
   };
 
-  // Eksekusi proses bypass ke endpoint Vercel
   const handleBypass = async () => {
     const target = url.trim();
     if (!target) {
@@ -81,6 +77,7 @@ export default function Home() {
     }
 
     setLoading(true);
+    setShowProgress(true);
     setResult(null);
     setCurrentStep(0);
     setStepTitle("MEMBACA LINK...");
@@ -88,20 +85,20 @@ export default function Home() {
     startTimer();
 
     try {
-      // Langkah 1: Membaca Link
-      await sleep(250);
+      // Step 1: Membaca Link
+      await sleep(350);
 
-      // Langkah 2: Memvalidasi Link
+      // Step 2: Validasi Link
       setCurrentStep(1);
       setStepTitle("MEMVALIDASI LINK...");
       if (!target.startsWith("http://") && !target.startsWith("https://")) {
         throw new Error("URL tidak valid. Awali dengan http:// atau https://");
       }
-      await sleep(200);
+      await sleep(300);
 
-      // Langkah 3: Koneksi Server Vercel Proxy
+      // Step 3: Koneksi Server
       setCurrentStep(2);
-      setStepTitle("MENGHUBUNGKAN SERVER...");
+      setStepTitle("KONEKSI SERVER...");
 
       const response = await fetch("/api/bypass", {
         method: "POST",
@@ -109,7 +106,7 @@ export default function Home() {
         body: JSON.stringify({ url: target }),
       });
 
-      // Langkah 4: Ekstraksi Safelink Zapi
+      // Step 4: Ekstraksi Safelink
       setCurrentStep(3);
       setStepTitle("EKSTRAKSI SAFELINK...");
       const resData = await response.json();
@@ -119,7 +116,7 @@ export default function Home() {
         throw new Error(errMsg);
       }
 
-      // Langkah 5: Parsing respon (data.data.finalUrl)
+      // Step 5: Selesai
       const finalDestination =
         resData?.data?.data?.finalUrl ||
         resData?.finalUrl ||
@@ -130,7 +127,7 @@ export default function Home() {
       }
 
       setCurrentStep(4);
-      setStepTitle("SELESAI!");
+      setStepTitle("PROSES SELESAI!");
       stopTimer();
 
       const elapsed = ((Date.now() - startTimeRef.current) / 1000).toFixed(1) + "s";
@@ -140,7 +137,6 @@ export default function Home() {
       setResult(finalDestination);
       setStatus({ type: "normal", text: "Tautan berhasil di-bypass!" });
 
-      // Simpan ke riwayat lokal
       const newHistory = [
         {
           dest: finalDestination,
@@ -158,11 +154,63 @@ export default function Home() {
     }
   };
 
+  // Definisi 5 Ikon SVG Stepper persis seperti desain aslinya
+  const stepItems = [
+    {
+      label: "Membaca Link",
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+          <circle cx="12" cy="12" r="3" />
+        </svg>
+      )
+    },
+    {
+      label: "Validasi Link",
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          <path d="m9 12 2 2 4-4" />
+        </svg>
+      )
+    },
+    {
+      label: "Koneksi Server",
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
+          <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
+          <line x1="6" y1="6" x2="6.01" y2="6" />
+          <line x1="6" y1="18" x2="6.01" y2="18" />
+        </svg>
+      )
+    },
+    {
+      label: "Ekstraksi Safelink",
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+          <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+          <line x1="12" y1="22.08" x2="12" y2="12" />
+        </svg>
+      )
+    },
+    {
+      label: "Selesai",
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+          <polyline points="22 4 12 14.01 9 11.01" />
+        </svg>
+      )
+    }
+  ];
+
   return (
     <div style={{ backgroundColor: "#0b0d13", color: "#f8fafc", minHeight: "100vh", fontFamily: "sans-serif", display: "flex", justifyContent: "center", padding: "24px 16px" }}>
       <div style={{ width: "100%", maxWidth: "560px", display: "flex", flexDirection: "column", gap: "20px" }}>
         
-        {/* Header / Navbar dengan Logo Gambar Asli */}
+        {/* Navbar */}
         <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: "16px", borderBottom: "1px solid #1d2232" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <div style={{ 
@@ -200,7 +248,7 @@ export default function Home() {
           </div>
         </header>
 
-        {/* Hero Section */}
+        {/* Hero */}
         <section>
           <div style={{ display: "inline-block", background: "rgba(6, 182, 212, 0.08)", border: "1px solid rgba(6, 182, 212, 0.22)", color: "#06b6d4", fontSize: "0.7rem", fontWeight: "600", padding: "3px 10px", borderRadius: "100px", marginBottom: "8px" }}>
             Instant Bypass
@@ -209,7 +257,7 @@ export default function Home() {
           <p style={{ fontSize: "0.84rem", color: "#94a3b8", margin: 0 }}>Dapatkan tautan tujuan langsung secara instan tanpa iklan atau waktu tunggu.</p>
         </section>
 
-        {/* Form Input & Action Card */}
+        {/* Main Card */}
         <section style={{ background: "#131722", border: "1px solid #1d2232", borderRadius: "14px", padding: "18px" }}>
           <div style={{ display: "flex", alignItems: "center", background: "#090a0f", border: "1px solid #1d2232", borderRadius: "10px", padding: "4px 8px 4px 12px", gap: "6px" }}>
             <input
@@ -253,22 +301,54 @@ export default function Home() {
             {loading ? "Memproses..." : "Bypass Sekarang"}
           </button>
 
-          {/* Stepper Progress Modern */}
-          {loading && (
-            <div style={{ marginTop: "16px", background: "#0d111a", border: "1px solid rgba(6, 182, 212, 0.22)", borderRadius: "10px", padding: "14px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-                <span style={{ fontSize: "0.74rem", fontWeight: "700", color: "#06b6d4", fontFamily: "monospace" }}>{stepTitle}</span>
-                <span style={{ fontSize: "0.74rem", color: "#64748b", fontFamily: "monospace" }}>{timerText}</span>
+          {/* STEPPER PROGRESS BOX (Sesuai Screenshot Anda) */}
+          {showProgress && (
+            <div style={{ marginTop: "18px", background: "#0d111a", border: "1px solid rgba(6, 182, 212, 0.28)", borderRadius: "12px", padding: "16px 12px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span style={{ width: "8px", height: "8px", backgroundColor: "#06b6d4", borderRadius: "50%", boxShadow: "0 0 8px #06b6d4" }}></span>
+                  <span style={{ fontSize: "0.76rem", fontWeight: "700", color: "#06b6d4", fontFamily: "monospace", letterSpacing: "0.5px" }}>
+                    {stepTitle}
+                  </span>
+                </div>
+                <span style={{ fontSize: "0.76rem", color: "#64748b", fontFamily: "monospace" }}>{timerText}</span>
               </div>
+
+              {/* 5 Box Langkah Horizontal */}
               <div style={{ display: "flex", justifyContent: "space-between", gap: "4px" }}>
-                {["Membaca", "Validasi", "Server", "Ekstraksi", "Selesai"].map((label, idx) => (
-                  <div key={idx} style={{ flex: 1, textAlign: "center", opacity: currentStep >= idx ? 1 : 0.3 }}>
-                    <div style={{ width: "36px", height: "36px", margin: "0 auto 4px", borderRadius: "8px", background: currentStep >= idx ? "rgba(6, 182, 212, 0.15)" : "#131824", border: `1.5px solid ${currentStep >= idx ? "#06b6d4" : "#1d2232"}`, display: "flex", alignItems: "center", justifyContent: "center", color: "#06b6d4", fontSize: "0.75rem", fontWeight: "bold" }}>
-                      {currentStep > idx ? "✓" : idx + 1}
+                {stepItems.map((item, idx) => {
+                  const isDone = currentStep > idx || currentStep === 4;
+                  const isActive = currentStep === idx && currentStep !== 4;
+
+                  return (
+                    <div key={idx} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "6px", opacity: isDone || isActive ? 1 : 0.35, transition: "all 0.25s ease" }}>
+                      <div style={{ 
+                        width: "48px", 
+                        height: "48px", 
+                        borderRadius: "12px", 
+                        background: isActive ? "rgba(6, 182, 212, 0.15)" : "#131824", 
+                        border: `1.5px solid ${isActive || isDone ? "#06b6d4" : "#1d2232"}`, 
+                        boxShadow: isActive ? "0 0 12px rgba(6, 182, 212, 0.35)" : "none",
+                        display: "flex", 
+                        alignItems: "center", 
+                        justifyContent: "center", 
+                        position: "relative",
+                        color: "#06b6d4"
+                      }}>
+                        {item.icon}
+                        {/* Centang Kecil di Pojok Kanan Atas */}
+                        {isDone && (
+                          <span style={{ position: "absolute", top: "3px", right: "5px", fontSize: "0.68rem", fontWeight: "bold", color: "#06b6d4" }}>
+                            ✓
+                          </span>
+                        )}
+                      </div>
+                      <span style={{ fontSize: "0.58rem", fontFamily: "monospace", textAlign: "center", color: isDone ? "#06b6d4" : isActive ? "#fff" : "#64748b", lineHeight: "1.2" }}>
+                        {item.label}
+                      </span>
                     </div>
-                    <span style={{ fontSize: "0.55rem", color: currentStep >= idx ? "#fff" : "#64748b" }}>{label}</span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -304,7 +384,7 @@ export default function Home() {
           )}
         </section>
 
-        {/* Riwayat Pemrosesan */}
+        {/* History Section */}
         <section style={{ background: "#131722", border: "1px solid #1d2232", borderRadius: "14px", padding: "16px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
             <div style={{ fontWeight: "600", fontSize: "0.85rem" }}>Riwayat Bypass ({history.length})</div>
@@ -330,29 +410,6 @@ export default function Home() {
                 </div>
               ))
             )}
-          </div>
-        </section>
-
-        {/* Panduan Penggunaan Ringkas */}
-        <section style={{ background: "#131722", border: "1px solid #1d2232", borderRadius: "14px", padding: "16px" }}>
-          <div style={{ fontWeight: "600", fontSize: "0.85rem", marginBottom: "10px" }}>Panduan Singkat</div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", fontSize: "0.75rem" }}>
-            <div style={{ background: "#090a0f", padding: "8px", borderRadius: "6px", border: "1px solid #1d2232" }}>
-              <b style={{ color: "#06b6d4" }}>1. Salin Link</b>
-              <p style={{ margin: "4px 0 0", color: "#94a3b8" }}>Salin tautan shortener yang ingin di-bypass.</p>
-            </div>
-            <div style={{ background: "#090a0f", padding: "8px", borderRadius: "6px", border: "1px solid #1d2232" }}>
-              <b style={{ color: "#06b6d4" }}>2. Klik Tempel</b>
-              <p style={{ margin: "4px 0 0", color: "#94a3b8" }}>Gunakan tombol tempel untuk memasukkan link.</p>
-            </div>
-            <div style={{ background: "#090a0f", padding: "8px", borderRadius: "6px", border: "1px solid #1d2232" }}>
-              <b style={{ color: "#06b6d4" }}>3. Bypass</b>
-              <p style={{ margin: "4px 0 0", color: "#94a3b8" }}>Tekan Bypass Sekarang dan tunggu proses stepper.</p>
-            </div>
-            <div style={{ background: "#090a0f", padding: "8px", borderRadius: "6px", border: "1px solid #1d2232" }}>
-              <b style={{ color: "#06b6d4" }}>4. Buka Tujuan</b>
-              <p style={{ margin: "4px 0 0", color: "#94a3b8" }}>Langsung salin atau klik buka tautan tujuan.</p>
-            </div>
           </div>
         </section>
 
