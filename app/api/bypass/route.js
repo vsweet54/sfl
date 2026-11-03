@@ -10,31 +10,37 @@ export async function POST(req) {
       );
     }
 
-    // Mengambil API Key dari Environment Variable Vercel
-    const apiKey = process.env.ZAPI_KEY;
+    // Daftar kunci Zapi cadangan
+    const keys = [process.env.ZAPI_KEY_1, process.env.ZAPI_KEY_2].filter(Boolean);
 
-    if (!apiKey) {
-      return Response.json(
-        { success: false, message: "API Key belum diatur di Vercel" },
-        { status: 500 }
-      );
+    let lastError = null;
+
+    // Coba kunci 1, jika habis/gagal otomatis coba kunci 2
+    for (const apiKey of keys) {
+      try {
+        const targetUrl = `https://zapi.ink/api/tools/bypass?apikey=${apiKey}&url=${encodeURIComponent(targetLink)}`;
+        const response = await fetch(targetUrl);
+        const data = await response.json();
+
+        // Jika berhasil mendapatkan respon valid dari Zapi
+        if (response.ok && data.status !== false && !data.error) {
+          return Response.json(data);
+        }
+
+        lastError = data;
+      } catch (err) {
+        lastError = err.message;
+      }
     }
 
-    // Tembak ke endpoint bypasser zapi.ink
-    const targetUrl = `https://zapi.ink/api/tools/bypass?apikey=${apiKey}&url=${encodeURIComponent(targetLink)}`;
-
-    const response = await fetch(targetUrl, {
-      method: "GET",
-      headers: {
-        "Accept": "application/json"
-      }
-    });
-
-    const data = await response.json();
-    return Response.json(data);
+    // Jika kedua kunci gagal atau kuota sama-sama habis
+    return Response.json(
+      { success: false, message: "Semua kuota API Zapi habis atau gagal diproses", detail: lastError },
+      { status: 429 }
+    );
   } catch (error) {
     return Response.json(
-      { success: false, message: "Gagal terhubung ke server bypass", error: error.message },
+      { success: false, message: "Terjadi kesalahan server", error: error.message },
       { status: 500 }
     );
   }
