@@ -159,8 +159,12 @@ export default function Home() {
       setTimerText(elapsed);
       setResultDuration(elapsed);
 
-      setResult(finalDestination);
-      setStatus({ type: "normal", text: "Tautan berhasil di-bypass!" });
+      // Reset tampilan ke kondisi awal (input kosong, status awal, stepper hilang)
+      // Riwayat & kartu hasil tetap dipertahankan
+      setUrl("");
+      setStatus({ type: "normal", text: "Siap memproses tautan target." });
+      setShowProgress(false);
+      setCurrentStep(0);
 
       const newHistory = [
         {
@@ -412,36 +416,6 @@ export default function Home() {
               </div>
             </div>
           )}
-
-          {/* Result Card */}
-          {result && (
-            <div style={{ marginTop: "16px", background: "#10141f", border: "1px solid rgba(16, 185, 129, 0.3)", borderRadius: "10px", padding: "14px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                <span style={{ fontSize: "0.75rem", fontWeight: "600", color: "#10b981" }}>✓ Berhasil di-bypass</span>
-                <span style={{ fontSize: "0.72rem", color: "#64748b", fontFamily: "monospace" }}>{resultDuration}</span>
-              </div>
-              <div style={{ background: "#090a0f", border: "1px solid #1d2232", borderRadius: "6px", padding: "8px 10px", fontSize: "0.82rem", color: "#06b6d4", wordBreak: "break-all", fontFamily: "monospace", marginBottom: "12px" }}>
-                {result}
-              </div>
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
-                <button
-                  type="button"
-                  onClick={() => handleCopy(result)}
-                  style={{ background: "#181c28", border: "1px solid #1d2232", color: "#fff", padding: "7px 12px", borderRadius: "6px", fontSize: "0.78rem", cursor: "pointer" }}
-                >
-                  {copySuccess ? "Tersalin!" : "Salin Link"}
-                </button>
-                <a
-                  href={result}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ background: "#10b981", color: "#000", fontWeight: "600", padding: "7px 12px", borderRadius: "6px", fontSize: "0.78rem", textDecoration: "none" }}
-                >
-                  Buka Tautan ↗
-                </a>
-              </div>
-            </div>
-          )}
         </section>
 
         {/* History Section */}
@@ -470,9 +444,14 @@ export default function Home() {
                     <div style={{ color: "#06b6d4", fontSize: "0.75rem", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis" }}>{item.dest}</div>
                     <div style={{ color: "#64748b", fontSize: "0.65rem" }}>Jam {item.time}</div>
                   </div>
-                  <button type="button" onClick={() => handleCopy(item.dest)} style={{ background: "transparent", border: "1px solid #1d2232", color: "#94a3b8", fontSize: "0.68rem", padding: "4px 8px", borderRadius: "4px", cursor: "pointer" }}>
-                    Salin
-                  </button>
+                  <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
+                    <button type="button" onClick={() => handleCopy(item.dest)} style={{ background: "transparent", border: "1px solid #1d2232", color: "#94a3b8", fontSize: "0.68rem", padding: "4px 8px", borderRadius: "4px", cursor: "pointer" }}>
+                      Salin
+                    </button>
+                    <a href={item.dest} target="_blank" rel="noopener noreferrer" style={{ background: "#10b981", color: "#000", fontWeight: "600", fontSize: "0.68rem", padding: "4px 8px", borderRadius: "4px", textDecoration: "none", display: "flex", alignItems: "center" }}>
+                      Buka ↗
+                    </a>
+                  </div>
                 </div>
               ))
             )}
@@ -532,7 +511,7 @@ export default function Home() {
               <div>
                 <b style={{ display: "block", fontSize: "0.84rem", color: "#f8fafc", marginBottom: "2px" }}>Buka Tujuan</b>
                 <p style={{ margin: 0, fontSize: "0.75rem", color: "#94a3b8", lineHeight: "1.4" }}>
-                  Salin tautan asli atau klik <span style={{ color: "#06b6d4", fontWeight: "600" }}>Buka Tautan</span> untuk langsung menuju tujuan.
+                  Salin tautan atau klik <span style={{ color: "#06b6d4", fontWeight: "600" }}>Buka</span> di riwayat untuk langsung menuju tujuan.
                 </p>
               </div>
             </div>
