@@ -1,85 +1,82 @@
 export const maxDuration = 30;
 
-// ============================================================
-// Pemetaan domain/pola URL -> endpoint ZAPI
-// Tambah/hapus sesuai kebutuhan
-// ============================================================
-const RESOLVERS = [
-  // Safelinku / SFL.GL
-  {
-    name: "Safelinku / SFL.GL",
-    pattern: /safelinku\.com|sfl\.gl/i,
-    url: "https://api.zapi.ink/v1/bypass-tools:safelinku/resolve",
-  },
-  // Sub4Unlock
-  {
-    name: "Sub4Unlock",
-    pattern: /sub4unlock\.co/i,
-    url: "https://api.zapi.ink/v1/bypass-tools:sub4unlock/resolve",
-  },
-  // Linkvertise / Link-to.net
-  {
-    name: "Linkvertise / Link-to.net",
-    pattern: /linkvertise\.com|link-to\.net/i,
-    url: "https://api.zapi.ink/v1/bypass-tools:linkvertise/resolve",
-  },
-  // Clk.sh / Oko.sh
-  {
-    name: "Clk.sh / Oko.sh",
-    pattern: /clk\.sh|oko\.sh/i,
-    url: "https://api.zapi.ink/v1/bypass-tools:clksh/resolve",
-  },
-  // ShrinkMe
-  {
-    name: "ShrinkMe",
-    pattern: /shrinkme\.io/i,
-    url: "https://api.zapi.ink/v1/bypass-tools:shrinkme/resolve",
-  },
-  // Tpi.li / Tii.la
-  {
-    name: "Tpi.li / Tii.la",
-    pattern: /tpi\.li|tii\.la/i,
-    url: "https://api.zapi.ink/v1/bypass-tools:tpili/resolve",
-  },
-  // Link2Unlock (redirect publik)
-  {
-    name: "Link2Unlock",
-    pattern: /link2unlock\.com/i,
-    url: "https://api.zapi.ink/v1/bypass-tools:link2unlock/resolve",
-  },
-  // Platoboost (redirect publik)
-  {
-    name: "Platoboost",
-    pattern: /platoboost\.com/i,
-    url: "https://api.zapi.ink/v1/bypass-tools:platoboost/resolve",
-  },
-  // Bitly / J.mp
-  {
-    name: "Bitly / J.mp",
-    pattern: /bit\.ly|j\.mp/i,
-    url: "https://api.zapi.ink/v1/bypass-tools:bitly/resolve",
-  },
-  // TinyURL
-  {
-    name: "TinyURL",
-    pattern: /tinyurl\.com/i,
-    url: "https://api.zapi.ink/v1/bypass-tools:tinyurl/resolve",
-  },
+// ─── URL Matcher → Endpoint Zapi ────────────────────────────────────────────
+// Urutan penting: lebih spesifik dulu, baru umum.
+const BYPASS_RULES = [
+  // Paste services (harus sebelum short-link)
+  { match: (u) => /pastebin\.com/i.test(u),        endpoint: "/v1/bypass-tools:pastebin/raw",        resultKey: ["content"] },
+  { match: (u) => /pastefy\.app/i.test(u),          endpoint: "/v1/bypass-tools:pastefy/get",         resultKey: ["content"] },
+  { match: (u) => /pastelua\.com/i.test(u),         endpoint: "/v1/bypass-tools:pastelua/get",        resultKey: ["loadstring", "content"] },
+  { match: (u) => /paste-drop\.com/i.test(u),       endpoint: "/v1/bypass-tools:paste-drop/get",     resultKey: ["content"] },
+  { match: (u) => /paster\.so/i.test(u),            endpoint: "/v1/bypass-tools:paster-so/get",      resultKey: ["content"] },
+  { match: (u) => /tempel\.in/i.test(u),            endpoint: "/v1/bypass-tools:tempel-in/resolve",  resultKey: ["content"] },
+  { match: (u) => /rentry\.(co|org)/i.test(u),      endpoint: "/v1/bypass-tools:rentry/raw",         resultKey: ["content"] },
+
+  // Script sites
+  { match: (u) => /gzenx\.com/i.test(u),            endpoint: "/v1/bypass-tools:gzenx/resolve",      resultKey: ["script"] },
+  { match: (u) => /scriptpastebins\.com/i.test(u),  endpoint: "/v1/bypass-tools:scriptpastebins/resolve", resultKey: ["script"] },
+
+  // Key systems
+  { match: (u) => /boblox-script\.com/i.test(u),    endpoint: "/v1/bypass-tools:blox-script/resolve", resultKey: ["key"] },
+  { match: (u) => /platorelay\.com/i.test(u),        endpoint: "/v1/bypass-tools:platoboost/resolve", resultKey: ["key"] },
+
+  // Social lockers
+  { match: (u) => /link2unlock\.com/i.test(u),      endpoint: "/v1/bypass-tools:link2unlock/resolve", resultKey: ["primaryUrl", "unlocks"] },
+  { match: (u) => /linkzy\.space/i.test(u),         endpoint: "/v1/bypass-tools:linkzy/resolve",     resultKey: ["destinationUrl"] },
+  { match: (u) => /socialwolvez\.com/i.test(u),     endpoint: "/v1/bypass-tools:socialwolvez/resolve",resultKey: ["finalUrl"] },
+  { match: (u) => /mboost\.me/i.test(u),            endpoint: "/v1/bypass-tools:mboost/resolve",     resultKey: ["destinationUrl"] },
+  { match: (u) => /sub2unlock\.com/i.test(u),       endpoint: "/v1/bypass-tools:sub2unlock/bypass",  resultKey: ["destinationUrl"] },
+  { match: (u) => /sub4unlock\.co/i.test(u),        endpoint: "/v1/bypass-tools:sub4unlock/resolve", resultKey: ["finalUrl"] },
+
+  // Linkvertise family
+  { match: (u) => /linkvertise\.com|link-to\.net|link-hub\.net|link-target\.(org|net)|link-center\.net|direct-link\.net/i.test(u),
+    endpoint: "/v1/bypass-tools:linkvertise/resolve", resultKey: ["url"] },
+
+  // Short-link lockers
+  { match: (u) => /go\.linkify\.ru/i.test(u),       endpoint: "/v1/bypass-tools:linkify/resolve",    resultKey: ["destinationUrl"] },
+  { match: (u) => /clk\.sh|oko\.sh|oii\.la/i.test(u), endpoint: "/v1/bypass-tools:clk-sh/resolve",  resultKey: ["finalUrl"] },
+  { match: (u) => /l1nq\.com|encurtador\.dev/i.test(u), endpoint: "/v1/bypass-tools:encurtador/resolve", resultKey: ["url"] },
+  { match: (u) => /ez4short\.com/i.test(u),         endpoint: "/v1/bypass-tools:ez4short/resolve",   resultKey: ["url"] },
+  { match: (u) => /shrinkme\.(click|io)/i.test(u),  endpoint: "/v1/bypass-tools:shrinkme/resolve",   resultKey: ["finalUrl"] },
+  { match: (u) => /sfl\.gl|safelinku\.com|linku\.to|lokerwfh\.net/i.test(u),
+    endpoint: "/v1/bypass-tools:safelinku/resolve",  resultKey: ["finalUrl"] },
+  { match: (u) => /tpi\.li|oil\.la|tii\.la|oei\.la|iir\.la|tvi\.la|lnbz\.la/i.test(u),
+    endpoint: "/v1/bypass-tools:tpi-li/resolve",     resultKey: ["destinationUrl"] },
+  { match: (u) => /bit\.ly|bitly\.is|j\.mp|amzn\.to/i.test(u),
+    endpoint: "/v1/bypass-tools:bitly/resolve",      resultKey: ["destinationUrl"] },
+
+  // Yasir252 (downloader site)
+  { match: (u) => /yasir252\.com/i.test(u),         endpoint: "/v1/bypass-tools:yasir252/resolve",   resultKey: ["boxes"] },
 ];
 
-// Fallback jika tidak ada yang cocok -> coba generic resolver
-const GENERIC_URL = "https://api.zapi.ink/v1/bypass-tools:generic/resolve";
+const BASE_URL = "https://api.zapi.ink";
 
-// ============================================================
-// Status / pesan yang dianggap "kuota habis" -> pindah key
-// ============================================================
+// Cari rule yang cocok dengan URL input
+function detectRule(url) {
+  return BYPASS_RULES.find((r) => r.match(url)) || null;
+}
+
+// Ekstrak nilai final dari nested response berdasarkan resultKey array
+function extractResult(data, resultKeys) {
+  const content = data?.data?.content ?? data?.content ?? data;
+  for (const key of resultKeys) {
+    if (content?.[key] !== undefined && content[key] !== null) {
+      // Kalau array (misal unlocks), ambil elemen pertama .url
+      if (Array.isArray(content[key]) && content[key][0]?.url) {
+        return content[key][0].url;
+      }
+      // Kalau string
+      if (typeof content[key] === "string") return content[key];
+    }
+  }
+  return null;
+}
+
+// Status / pesan yang dianggap "kuota habis" -> pindah ke key berikutnya
 const isExhausted = (status, raw) =>
   [401, 402, 403, 429].includes(status) ||
   /limit|quota|kuota|habis|exceed|insufficient|credit/i.test(raw);
 
-// ============================================================
-// Handler utama
-// ============================================================
 export async function POST(req) {
   try {
     const body = await req.json().catch(() => ({}));
@@ -89,19 +86,24 @@ export async function POST(req) {
       return Response.json({ success: false, message: "URL kosong" }, { status: 400 });
     }
 
-    let parsedUrl;
     try {
-      parsedUrl = new URL(targetLink);
+      new URL(targetLink);
     } catch {
       return Response.json({ success: false, message: "Format URL tidak valid" }, { status: 400 });
     }
 
-    // Pilih resolver berdasarkan domain URL
-    const resolver = RESOLVERS.find((r) => r.pattern.test(parsedUrl.hostname + parsedUrl.href));
-    const resolverUrl = resolver?.url ?? GENERIC_URL;
-    const resolverName = resolver?.name ?? "Generic";
+    // Deteksi rule
+    const rule = detectRule(targetLink);
+    if (!rule) {
+      return Response.json(
+        { success: false, message: "URL tidak dikenali. Domain ini belum didukung." },
+        { status: 422 }
+      );
+    }
 
-    // Kumpulkan API key (urut: KEY_1, KEY_2, KEY_3, KEY)
+    const TARGET_URL = BASE_URL + rule.endpoint;
+
+    // Urutan key: KEY_1, KEY_2, KEY_3, KEY
     const apiKeys = [
       process.env.ZAPI_KEY_1,
       process.env.ZAPI_KEY_2,
@@ -111,7 +113,7 @@ export async function POST(req) {
 
     if (apiKeys.length === 0) {
       return Response.json(
-        { success: false, message: "API Key belum diatur di Vercel!" },
+        { success: false, message: "API Key belum diatur di environment!" },
         { status: 500 }
       );
     }
@@ -123,25 +125,17 @@ export async function POST(req) {
 
       let response, rawText;
       try {
-        response = await fetch(resolverUrl, {
-          method: "POST",
+        response = await fetch(`${TARGET_URL}?url=${encodeURIComponent(targetLink)}`, {
+          method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${apiKey}`,
             "x-api-key": apiKey,
           },
-          body: JSON.stringify({ url: targetLink }),
           signal: AbortSignal.timeout(25000),
         });
         rawText = await response.text();
       } catch (err) {
-        last = {
-          success: false,
-          status: 502,
-          data: err.message,
-          keyUsed: i + 1,
-          resolver: resolverName,
-        };
+        last = { success: false, status: 502, data: err.message, keyUsed: i + 1, endpoint: rule.endpoint };
         continue;
       }
 
@@ -152,27 +146,18 @@ export async function POST(req) {
         data = rawText;
       }
 
-      last = {
-        success: response.ok,
-        status: response.status,
-        data,
-        keyUsed: i + 1,
-        resolver: resolverName,
-      };
+      last = { success: response.ok, status: response.status, data, keyUsed: i + 1, endpoint: rule.endpoint };
 
-      // Sukses, atau error bukan karena kuota -> berhenti
       if (response.ok || !isExhausted(response.status, rawText)) {
-        return Response.json(last);
+        // Ekstrak finalUrl berdasarkan rule
+        const finalUrl = extractResult({ data }, rule.resultKey);
+        return Response.json({ ...last, finalUrl });
       }
-      // Kuota habis -> coba key berikutnya
+      // Kuota habis -> lanjut key berikutnya
     }
 
     return Response.json(
-      {
-        ...last,
-        message: "Semua API key habis atau terkena limit",
-        resolver: resolverName,
-      },
+      { ...last, message: "Semua API key habis atau terkena limit" },
       { status: last?.status || 429 }
     );
   } catch (error) {
