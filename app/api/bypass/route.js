@@ -10,37 +10,37 @@ export async function POST(req) {
       );
     }
 
-    // Daftar kunci Zapi cadangan
-    const keys = [process.env.ZAPI_KEY_1, process.env.ZAPI_KEY_2].filter(Boolean);
+    // Ambil kunci dari Vercel
+    const keys = [
+      process.env.ZAPI_KEY_1 || process.env.ZAPI_KEY,
+      process.env.ZAPI_KEY_2 || process.env.SECOND_API_KEY
+    ].filter(Boolean);
 
-    let lastError = null;
-
-    // Coba kunci 1, jika habis/gagal otomatis coba kunci 2
-    for (const apiKey of keys) {
-      try {
-        const targetUrl = `https://zapi.ink/api/tools/bypass?apikey=${apiKey}&url=${encodeURIComponent(targetLink)}`;
-        const response = await fetch(targetUrl);
-        const data = await response.json();
-
-        // Jika berhasil mendapatkan respon valid dari Zapi
-        if (response.ok && data.status !== false && !data.error) {
-          return Response.json(data);
-        }
-
-        lastError = data;
-      } catch (err) {
-        lastError = err.message;
-      }
+    if (keys.length === 0) {
+      return Response.json(
+        { success: false, message: "API Key belum terbaca di Vercel!" },
+        { status: 500 }
+      );
     }
 
-    // Jika kedua kunci gagal atau kuota sama-sama habis
-    return Response.json(
-      { success: false, message: "Semua kuota API Zapi habis atau gagal diproses", detail: lastError },
-      { status: 429 }
-    );
+    const apiKey = keys[0];
+
+    // Endpoint yang ditembak
+    const targetUrl = `https://zapi.ink/api/tools/bypass?apikey=${apiKey}&url=${encodeURIComponent(targetLink)}`;
+
+    const response = await fetch(targetUrl);
+    const data = await response.json();
+
+    // Langsung teruskan apa pun balasan asli dari Zapi ke layar tester
+    return Response.json({
+      success: response.ok,
+      statusKode: response.status,
+      zapiResponse: data
+    });
+
   } catch (error) {
     return Response.json(
-      { success: false, message: "Terjadi kesalahan server", error: error.message },
+      { success: false, message: "Server error", detail: error.message },
       { status: 500 }
     );
   }
