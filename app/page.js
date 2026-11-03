@@ -371,9 +371,10 @@ export default function Page() {
       await sleep(250);
       setStep(2);
 
-      const res = await fetch(`${API_URL}?url=${encodeURIComponent(target)}`, {
-        method: "GET",
-        headers: { Accept: "application/json" },
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ url: target }),
         signal: controller.signal,
         cache: "no-store",
       });
@@ -388,19 +389,24 @@ export default function Page() {
         data = raw;
       }
 
-      if (!res.ok) {
+      const obj = data && typeof data === "object" ? data : {};
+      const value =
+        typeof obj.finalUrl === "string" && obj.finalUrl.trim() ? obj.finalUrl.trim() : null;
+
+      if (!value) {
+        const inner = obj.data && typeof obj.data === "object" ? obj.data : {};
         const msg =
-          (data && typeof data === "object" && (data.error || data.message)) ||
-          `Server menolak permintaan (HTTP ${res.status}).`;
+          obj.message ||
+          obj.errorDetail ||
+          obj.error ||
+          inner.message ||
+          inner.error ||
+          (typeof obj.data === "string" ? obj.data.slice(0, 160) : "") ||
+          (obj.status
+            ? `API bypass mengembalikan HTTP ${obj.status} tanpa hasil.`
+            : `Server menolak permintaan (HTTP ${res.status}).`);
         throw new Error(String(msg));
       }
-
-      if (data && typeof data === "object" && data.error) {
-        throw new Error(String(data.error));
-      }
-
-      const value = pickResult(data);
-      if (!value) throw new Error("Server tidak mengembalikan hasil. Coba link lain.");
 
       const duration = (Date.now() - startRef.current) / 1000;
       setElapsed(duration);
