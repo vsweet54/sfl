@@ -4,44 +4,46 @@ export async function POST(req) {
     const targetLink = body.url;
 
     if (!targetLink) {
-      return Response.json(
-        { success: false, message: "URL target tidak boleh kosong" },
-        { status: 400 }
-      );
+      return Response.json({ success: false, message: "URL kosong" }, { status: 400 });
     }
 
-    // Ambil kunci dari Vercel
-    const keys = [
-      process.env.ZAPI_KEY_1 || process.env.ZAPI_KEY,
-      process.env.ZAPI_KEY_2 || process.env.SECOND_API_KEY
-    ].filter(Boolean);
+    const apiKey = process.env.ZAPI_KEY_1 || process.env.ZAPI_KEY;
 
-    if (keys.length === 0) {
-      return Response.json(
-        { success: false, message: "API Key belum terbaca di Vercel!" },
-        { status: 500 }
-      );
+    if (!apiKey) {
+      return Response.json({ success: false, message: "API Key belum diatur di Vercel!" }, { status: 500 });
     }
 
-    const apiKey = keys[0];
+    // Endpoint asli Zapi
+    const targetUrl = "https://api.zapi.ink/v1/bypass-tools:safelinku/resolve";
 
-    // Endpoint yang ditembak
-    const targetUrl = `https://zapi.ink/api/tools/bypass?apikey=${apiKey}&url=${encodeURIComponent(targetLink)}`;
+    // Kirim request ke Zapi
+    const response = await fetch(targetUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`,
+        "x-api-key": apiKey
+      },
+      body: JSON.stringify({
+        url: targetLink
+      })
+    });
 
-    const response = await fetch(targetUrl);
-    const data = await response.json();
+    const rawText = await response.text();
+    let data;
+    try {
+      data = JSON.parse(rawText);
+    } catch {
+      data = rawText;
+    }
 
-    // Langsung teruskan apa pun balasan asli dari Zapi ke layar tester
     return Response.json({
       success: response.ok,
-      statusKode: response.status,
-      zapiResponse: data
+      status: response.status,
+      data: data
     });
 
   } catch (error) {
-    return Response.json(
-      { success: false, message: "Server error", detail: error.message },
-      { status: 500 }
-    );
+    return Response.json({ success: false, errorDetail: error.message }, { status: 500 });
   }
 }
