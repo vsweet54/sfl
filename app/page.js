@@ -47,6 +47,16 @@ export default function Home() {
     }
   }, []);
 
+  // Input dikosongkan (manual / tombol X) -> tampilan kembali seperti awal, riwayat tetap
+  useEffect(() => {
+    if (!url.trim() && !loading) {
+      setResult(null);
+      setShowProgress(false);
+      setCurrentStep(0);
+      setStatus({ type: "normal", text: "Siap memproses tautan target." });
+    }
+  }, [url]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   const startTimer = () => {
@@ -159,12 +169,8 @@ export default function Home() {
       setTimerText(elapsed);
       setResultDuration(elapsed);
 
-      // Reset tampilan ke kondisi awal (input kosong, status awal, stepper hilang)
-      // Riwayat & kartu hasil tetap dipertahankan
-      setUrl("");
-      setStatus({ type: "normal", text: "Siap memproses tautan target." });
-      setShowProgress(false);
-      setCurrentStep(0);
+      setResult(finalDestination);
+      setStatus({ type: "normal", text: "Tautan berhasil di-bypass!" });
 
       const newHistory = [
         {
@@ -413,6 +419,36 @@ export default function Home() {
                     </div>
                   );
                 })}
+              </div>
+            </div>
+          )}
+
+          {/* Result Card */}
+          {result && (
+            <div style={{ marginTop: "16px", background: "#10141f", border: "1px solid rgba(16, 185, 129, 0.3)", borderRadius: "10px", padding: "14px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                <span style={{ fontSize: "0.75rem", fontWeight: "600", color: "#10b981" }}>✓ Berhasil di-bypass</span>
+                <span style={{ fontSize: "0.72rem", color: "#64748b", fontFamily: "monospace" }}>{resultDuration}</span>
+              </div>
+              <div style={{ background: "#090a0f", border: "1px solid #1d2232", borderRadius: "6px", padding: "8px 10px", fontSize: "0.82rem", color: "#06b6d4", wordBreak: "break-all", fontFamily: "monospace", marginBottom: "12px" }}>
+                {result}
+              </div>
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
+                <button
+                  type="button"
+                  onClick={() => handleCopy(result)}
+                  style={{ background: "#181c28", border: "1px solid #1d2232", color: "#fff", padding: "7px 12px", borderRadius: "6px", fontSize: "0.78rem", cursor: "pointer" }}
+                >
+                  {copySuccess ? "Tersalin!" : "Salin Link"}
+                </button>
+                <a
+                  href={result}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ background: "#10b981", color: "#000", fontWeight: "600", padding: "7px 12px", borderRadius: "6px", fontSize: "0.78rem", textDecoration: "none" }}
+                >
+                  Buka Tautan ↗
+                </a>
               </div>
             </div>
           )}
