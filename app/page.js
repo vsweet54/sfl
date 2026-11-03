@@ -47,6 +47,8 @@ export default function Home() {
       const text = await navigator.clipboard.readText();
       if (text) {
         setUrl(text.trim());
+        setResult(null);
+        setShowProgress(false);
         setStatus({ type: "normal", text: "Tautan ditempel dari papan klip." });
       }
     } catch {
@@ -264,13 +266,21 @@ export default function Home() {
               type="text"
               placeholder="Tempel link safelink..."
               value={url}
-              onChange={(e) => setUrl(e.target.value)}
+              onChange={(e) => {
+                setUrl(e.target.value);
+                setResult(null);
+                setShowProgress(false);
+              }}
               style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", outline: "none", color: "#f8fafc", fontSize: "0.85rem", padding: "6px 0" }}
             />
             {url && (
               <button
                 type="button"
-                onClick={() => setUrl("")}
+                onClick={() => {
+                  setUrl("");
+                  setResult(null);
+                  setShowProgress(false);
+                }}
                 title="Hapus teks"
                 style={{ width: "24px", height: "24px", borderRadius: "50%", background: "rgba(239, 68, 68, 0.15)", border: "none", color: "#f87171", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.75rem" }}
               >
