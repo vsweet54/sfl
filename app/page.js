@@ -2,6 +2,26 @@
 
 import { useState, useEffect, useRef } from "react";
 
+const SUPPORTED = [
+  ["Bitly", "bit.ly"],
+  ["Clk.sh", "clk.sh"],
+  ["tpi.li", "tpi.li"],
+  ["Safelinku", "sfl.gl"],
+  ["Linkvertise", "linkvertise.com"],
+  ["Encurtador / l1nq", "l1nq.com"],
+  ["EZ4Short", "ez4short.com"],
+  ["Link2Unlock", "link2unlock.com"],
+  ["Linkify", "go.linkify.ru"],
+  ["Linkzy", "linkzy.space"],
+  ["MBoost", "mboost.me"],
+  ["Shrinkme", "shrinkme.click"],
+  ["SocialWolvez", "socialwolvez.com"],
+  ["Sub2Unlock", "sub2unlock.com"],
+  ["Sub4Unlock", "sub4unlock.co"],
+  ["Platoboost", "platorelay.com"],
+  ["Blox-Script", "boblox-script.com"],
+];
+
 export default function Home() {
   const [url, setUrl] = useState("");
   const [status, setStatus] = useState({ type: "normal", text: "Siap memproses tautan target." });
@@ -262,6 +282,43 @@ export default function Home() {
           <p style={{ fontSize: "0.84rem", color: "#94a3b8", margin: 0 }}>Auto-detect & bypass safelink, shortlink, locker, paste, dan key system secara instan.</p>
         </section>
 
+        {/* Pesan Berjalan: daftar link yang didukung */}
+        <style>{`
+          @keyframes neoRun { to { transform: translateX(-50%); } }
+          .neo-mq:hover .neo-tk, .neo-mq:active .neo-tk { animation-play-state: paused; }
+          @media (prefers-reduced-motion: reduce) { .neo-tk { animation: none !important; } }
+        `}</style>
+        <div
+          className="neo-mq"
+          style={{ display: "flex", alignItems: "center", gap: "10px", background: "#131722", border: "1px solid #1d2232", borderRadius: "12px", padding: "8px 10px", overflow: "hidden" }}
+        >
+          <b style={{ flexShrink: 0, fontSize: "0.68rem", fontWeight: "700", color: "#06b6d4", background: "rgba(6, 182, 212, 0.1)", border: "1px solid rgba(6, 182, 212, 0.25)", borderRadius: "6px", padding: "4px 8px", fontFamily: "monospace" }}>
+            DIDUKUNG
+          </b>
+          <div
+            style={{
+              flex: 1,
+              minWidth: 0,
+              overflow: "hidden",
+              WebkitMaskImage: "linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent)",
+              maskImage: "linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent)",
+            }}
+          >
+            <div className="neo-tk" style={{ display: "flex", width: "max-content", animation: "neoRun 55s linear infinite" }}>
+              {[0, 1].map((n) => (
+                <div key={n} style={{ display: "flex", gap: "8px", paddingRight: "8px" }}>
+                  {SUPPORTED.map(([name, domain]) => (
+                    <div key={n + name} style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: "6px", background: "#090a0f", border: "1px solid #1d2232", borderRadius: "100px", padding: "5px 11px", fontSize: "0.72rem", whiteSpace: "nowrap" }}>
+                      <span style={{ fontWeight: "600", color: "#f8fafc" }}>{name}</span>
+                      <span style={{ color: "#64748b", fontFamily: "monospace", fontSize: "0.68rem" }}>{domain}</span>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
         {/* Input & Action Card */}
         <section style={{ background: "#131722", border: "1px solid #1d2232", borderRadius: "14px", padding: "18px" }}>
           <div style={{ display: "flex", alignItems: "center", background: "#090a0f", border: "1px solid #1d2232", borderRadius: "10px", padding: "4px 8px 4px 12px", gap: "6px" }}>
@@ -391,103 +448,4 @@ export default function Home() {
         <section style={{ background: "#131722", border: "1px solid #1d2232", borderRadius: "14px", padding: "16px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <span style={{ fontSize: "0.9rem" }}>🕒</span>
-              <span style={{ fontWeight: "600", fontSize: "0.85rem" }}>Riwayat Bypass</span>
-              <span style={{ background: "#181c28", color: "#94a3b8", fontSize: "0.7rem", padding: "2px 6px", borderRadius: "10px", fontFamily: "monospace" }}>
-                {history.length}
-              </span>
-            </div>
-            {history.length > 0 && (
-              <button type="button" onClick={handleClearHistory} style={{ background: "transparent", border: "none", color: "#64748b", fontSize: "0.72rem", cursor: "pointer" }}>
-                Bersihkan
-              </button>
-            )}
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            {history.length === 0 ? (
-              <div style={{ textAlign: "center", color: "#64748b", fontSize: "0.75rem", padding: "10px 0" }}>Belum ada riwayat tautan yang diproses.</div>
-            ) : (
-              history.map((item, i) => (
-                <div key={i} style={{ background: "#090a0f", border: "1px solid #1d2232", borderRadius: "6px", padding: "8px 10px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "8px" }}>
-                  <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
-                    <div style={{ color: "#06b6d4", fontSize: "0.75rem", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis" }}>{item.dest}</div>
-                    <div style={{ color: "#64748b", fontSize: "0.65rem" }}>Jam {item.time}</div>
-                  </div>
-                  <button type="button" onClick={() => handleCopy(item.dest)} style={{ background: "transparent", border: "1px solid #1d2232", color: "#94a3b8", fontSize: "0.68rem", padding: "4px 8px", borderRadius: "4px", cursor: "pointer" }}>
-                    Salin
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
-        </section>
-
-        {/* PANDUAN PENGGUNAAN (Sesuai Persis dengan Screenshot MT Manager Anda) */}
-        <section style={{ background: "#131722", border: "1px solid #1d2232", borderRadius: "14px", padding: "18px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "14px" }}>
-            <span style={{ fontSize: "0.9rem", color: "#94a3b8" }}>ⓘ</span>
-            <span style={{ fontWeight: "600", fontSize: "0.9rem" }}>Panduan Penggunaan</span>
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            {/* Step 01 */}
-            <div style={{ background: "#090a0f", border: "1px solid #1d2232", borderRadius: "10px", padding: "14px", display: "flex", gap: "12px", alignItems: "flex-start" }}>
-              <span style={{ fontFamily: "monospace", fontSize: "0.85rem", fontWeight: "700", color: "#06b6d4", background: "rgba(6, 182, 212, 0.1)", border: "1px solid rgba(6, 182, 212, 0.25)", borderRadius: "6px", padding: "4px 8px", flexShrink: 0 }}>
-                01
-              </span>
-              <div>
-                <b style={{ display: "block", fontSize: "0.84rem", color: "#f8fafc", marginBottom: "2px" }}>Salin Tautan</b>
-                <p style={{ margin: 0, fontSize: "0.75rem", color: "#94a3b8", lineHeight: "1.4" }}>Salin link target: safelink, shortlink, locker, paste, atau key system yang ingin di-bypass.</p>
-              </div>
-            </div>
-
-            {/* Step 02 */}
-            <div style={{ background: "#090a0f", border: "1px solid #1d2232", borderRadius: "10px", padding: "14px", display: "flex", gap: "12px", alignItems: "flex-start" }}>
-              <span style={{ fontFamily: "monospace", fontSize: "0.85rem", fontWeight: "700", color: "#06b6d4", background: "rgba(6, 182, 212, 0.1)", border: "1px solid rgba(6, 182, 212, 0.25)", borderRadius: "6px", padding: "4px 8px", flexShrink: 0 }}>
-                02
-              </span>
-              <div>
-                <b style={{ display: "block", fontSize: "0.84rem", color: "#f8fafc", marginBottom: "2px" }}>Tempelkan Link</b>
-                <p style={{ margin: 0, fontSize: "0.75rem", color: "#94a3b8", lineHeight: "1.4" }}>
-                  Tekan tombol <span style={{ color: "#06b6d4", fontWeight: "600" }}>Tempel</span> untuk memasukkan URL secara otomatis.
-                </p>
-              </div>
-            </div>
-
-            {/* Step 03 */}
-            <div style={{ background: "#090a0f", border: "1px solid #1d2232", borderRadius: "10px", padding: "14px", display: "flex", gap: "12px", alignItems: "flex-start" }}>
-              <span style={{ fontFamily: "monospace", fontSize: "0.85rem", fontWeight: "700", color: "#06b6d4", background: "rgba(6, 182, 212, 0.1)", border: "1px solid rgba(6, 182, 212, 0.25)", borderRadius: "6px", padding: "4px 8px", flexShrink: 0 }}>
-                03
-              </span>
-              <div>
-                <b style={{ display: "block", fontSize: "0.84rem", color: "#f8fafc", marginBottom: "2px" }}>Mulai Bypass</b>
-                <p style={{ margin: 0, fontSize: "0.75rem", color: "#94a3b8", lineHeight: "1.4" }}>
-                  Klik tombol <span style={{ color: "#06b6d4", fontWeight: "600" }}>Bypass Sekarang</span> dan pantau indikator langkah.
-                </p>
-              </div>
-            </div>
-
-            {/* Step 04 */}
-            <div style={{ background: "#090a0f", border: "1px solid #1d2232", borderRadius: "10px", padding: "14px", display: "flex", gap: "12px", alignItems: "flex-start" }}>
-              <span style={{ fontFamily: "monospace", fontSize: "0.85rem", fontWeight: "700", color: "#06b6d4", background: "rgba(6, 182, 212, 0.1)", border: "1px solid rgba(6, 182, 212, 0.25)", borderRadius: "6px", padding: "4px 8px", flexShrink: 0 }}>
-                04
-              </span>
-              <div>
-                <b style={{ display: "block", fontSize: "0.84rem", color: "#f8fafc", marginBottom: "2px" }}>Buka Tujuan</b>
-                <p style={{ margin: 0, fontSize: "0.75rem", color: "#94a3b8", lineHeight: "1.4" }}>
-                  Salin tautan asli atau klik <span style={{ color: "#06b6d4", fontWeight: "600" }}>Buka Tautan</span> untuk langsung menuju tujuan.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Footer */}
-        <footer style={{ textAlign: "center", color: "#64748b", fontSize: "0.72rem", marginTop: "auto", paddingBottom: "10px" }}>
-          NEO Bypasser • Crafted by <b>NEO</b>
-        </footer>
-
-      </div>
-    </div>
-  );
-}
+              <span style={{ fontSize: "0.9rem" }}>🕒
