@@ -154,7 +154,7 @@ export default function Home() {
     }
   };
 
-  // Definisi 5 Ikon SVG Stepper persis seperti desain aslinya
+  // 5 Ikon SVG Stepper persis desain asli
   const stepItems = [
     {
       label: "Membaca Link",
@@ -257,7 +257,7 @@ export default function Home() {
           <p style={{ fontSize: "0.84rem", color: "#94a3b8", margin: 0 }}>Dapatkan tautan tujuan langsung secara instan tanpa iklan atau waktu tunggu.</p>
         </section>
 
-        {/* Main Card */}
+        {/* Input & Action Card */}
         <section style={{ background: "#131722", border: "1px solid #1d2232", borderRadius: "14px", padding: "18px" }}>
           <div style={{ display: "flex", alignItems: "center", background: "#090a0f", border: "1px solid #1d2232", borderRadius: "10px", padding: "4px 8px 4px 12px", gap: "6px" }}>
             <input
@@ -298,10 +298,10 @@ export default function Home() {
             disabled={loading}
             style={{ width: "100%", background: "linear-gradient(135deg, #0ea5e9, #0284c7)", color: "#fff", border: "none", padding: "12px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: "600", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.6 : 1 }}
           >
-            {loading ? "Memproses..." : "Bypass Sekarang"}
+            {loading ? "Memproses..." : "Bypass Sekarang →"}
           </button>
 
-          {/* STEPPER PROGRESS BOX (Sesuai Screenshot Anda) */}
+          {/* Stepper Progress Box */}
           {showProgress && (
             <div style={{ marginTop: "18px", background: "#0d111a", border: "1px solid rgba(6, 182, 212, 0.28)", borderRadius: "12px", padding: "16px 12px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
@@ -314,7 +314,6 @@ export default function Home() {
                 <span style={{ fontSize: "0.76rem", color: "#64748b", fontFamily: "monospace" }}>{timerText}</span>
               </div>
 
-              {/* 5 Box Langkah Horizontal */}
               <div style={{ display: "flex", justifyContent: "space-between", gap: "4px" }}>
                 {stepItems.map((item, idx) => {
                   const isDone = currentStep > idx || currentStep === 4;
@@ -336,7 +335,6 @@ export default function Home() {
                         color: "#06b6d4"
                       }}>
                         {item.icon}
-                        {/* Centang Kecil di Pojok Kanan Atas */}
                         {isDone && (
                           <span style={{ position: "absolute", top: "3px", right: "5px", fontSize: "0.68rem", fontWeight: "bold", color: "#06b6d4" }}>
                             ✓
@@ -387,7 +385,13 @@ export default function Home() {
         {/* History Section */}
         <section style={{ background: "#131722", border: "1px solid #1d2232", borderRadius: "14px", padding: "16px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-            <div style={{ fontWeight: "600", fontSize: "0.85rem" }}>Riwayat Bypass ({history.length})</div>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <span style={{ fontSize: "0.9rem" }}>🕒</span>
+              <span style={{ fontWeight: "600", fontSize: "0.85rem" }}>Riwayat Bypass</span>
+              <span style={{ background: "#181c28", color: "#94a3b8", fontSize: "0.7rem", padding: "2px 6px", borderRadius: "10px", fontFamily: "monospace" }}>
+                {history.length}
+              </span>
+            </div>
             {history.length > 0 && (
               <button type="button" onClick={handleClearHistory} style={{ background: "transparent", border: "none", color: "#64748b", fontSize: "0.72rem", cursor: "pointer" }}>
                 Bersihkan
@@ -396,7 +400,7 @@ export default function Home() {
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
             {history.length === 0 ? (
-              <div style={{ textAlign: "center", color: "#64748b", fontSize: "0.75rem", padding: "10px 0" }}>Belum ada riwayat.</div>
+              <div style={{ textAlign: "center", color: "#64748b", fontSize: "0.75rem", padding: "10px 0" }}>Belum ada riwayat tautan yang diproses.</div>
             ) : (
               history.map((item, i) => (
                 <div key={i} style={{ background: "#090a0f", border: "1px solid #1d2232", borderRadius: "6px", padding: "8px 10px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "8px" }}>
@@ -410,6 +414,66 @@ export default function Home() {
                 </div>
               ))
             )}
+          </div>
+        </section>
+
+        {/* PANDUAN PENGGUNAAN (Sesuai Persis dengan Screenshot MT Manager Anda) */}
+        <section style={{ background: "#131722", border: "1px solid #1d2232", borderRadius: "14px", padding: "18px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "14px" }}>
+            <span style={{ fontSize: "0.9rem", color: "#94a3b8" }}>ⓘ</span>
+            <span style={{ fontWeight: "600", fontSize: "0.9rem" }}>Panduan Penggunaan</span>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {/* Step 01 */}
+            <div style={{ background: "#090a0f", border: "1px solid #1d2232", borderRadius: "10px", padding: "14px", display: "flex", gap: "12px", alignItems: "flex-start" }}>
+              <span style={{ fontFamily: "monospace", fontSize: "0.85rem", fontWeight: "700", color: "#06b6d4", background: "rgba(6, 182, 212, 0.1)", border: "1px solid rgba(6, 182, 212, 0.25)", borderRadius: "6px", padding: "4px 8px", flexShrink: 0 }}>
+                01
+              </span>
+              <div>
+                <b style={{ display: "block", fontSize: "0.84rem", color: "#f8fafc", marginBottom: "2px" }}>Salin Tautan</b>
+                <p style={{ margin: 0, fontSize: "0.75rem", color: "#94a3b8", lineHeight: "1.4" }}>Salin link safelink SFL target yang ingin Anda lewati.</p>
+              </div>
+            </div>
+
+            {/* Step 02 */}
+            <div style={{ background: "#090a0f", border: "1px solid #1d2232", borderRadius: "10px", padding: "14px", display: "flex", gap: "12px", alignItems: "flex-start" }}>
+              <span style={{ fontFamily: "monospace", fontSize: "0.85rem", fontWeight: "700", color: "#06b6d4", background: "rgba(6, 182, 212, 0.1)", border: "1px solid rgba(6, 182, 212, 0.25)", borderRadius: "6px", padding: "4px 8px", flexShrink: 0 }}>
+                02
+              </span>
+              <div>
+                <b style={{ display: "block", fontSize: "0.84rem", color: "#f8fafc", marginBottom: "2px" }}>Tempelkan Link</b>
+                <p style={{ margin: 0, fontSize: "0.75rem", color: "#94a3b8", lineHeight: "1.4" }}>
+                  Tekan tombol <span style={{ color: "#06b6d4", fontWeight: "600" }}>Tempel</span> untuk memasukkan URL secara otomatis.
+                </p>
+              </div>
+            </div>
+
+            {/* Step 03 */}
+            <div style={{ background: "#090a0f", border: "1px solid #1d2232", borderRadius: "10px", padding: "14px", display: "flex", gap: "12px", alignItems: "flex-start" }}>
+              <span style={{ fontFamily: "monospace", fontSize: "0.85rem", fontWeight: "700", color: "#06b6d4", background: "rgba(6, 182, 212, 0.1)", border: "1px solid rgba(6, 182, 212, 0.25)", borderRadius: "6px", padding: "4px 8px", flexShrink: 0 }}>
+                03
+              </span>
+              <div>
+                <b style={{ display: "block", fontSize: "0.84rem", color: "#f8fafc", marginBottom: "2px" }}>Mulai Bypass</b>
+                <p style={{ margin: 0, fontSize: "0.75rem", color: "#94a3b8", lineHeight: "1.4" }}>
+                  Klik tombol <span style={{ color: "#06b6d4", fontWeight: "600" }}>Bypass Sekarang</span> dan pantau indikator langkah.
+                </p>
+              </div>
+            </div>
+
+            {/* Step 04 */}
+            <div style={{ background: "#090a0f", border: "1px solid #1d2232", borderRadius: "10px", padding: "14px", display: "flex", gap: "12px", alignItems: "flex-start" }}>
+              <span style={{ fontFamily: "monospace", fontSize: "0.85rem", fontWeight: "700", color: "#06b6d4", background: "rgba(6, 182, 212, 0.1)", border: "1px solid rgba(6, 182, 212, 0.25)", borderRadius: "6px", padding: "4px 8px", flexShrink: 0 }}>
+                04
+              </span>
+              <div>
+                <b style={{ display: "block", fontSize: "0.84rem", color: "#f8fafc", marginBottom: "2px" }}>Buka Tujuan</b>
+                <p style={{ margin: 0, fontSize: "0.75rem", color: "#94a3b8", lineHeight: "1.4" }}>
+                  Salin tautan asli atau klik <span style={{ color: "#06b6d4", fontWeight: "600" }}>Buka Tautan</span> untuk langsung menuju tujuan.
+                </p>
+              </div>
+            </div>
           </div>
         </section>
 
