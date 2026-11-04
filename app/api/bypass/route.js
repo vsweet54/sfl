@@ -25,7 +25,7 @@ const BYPASS_RULES = [
   { match: (u) => /linkzy\.space/i.test(u),         endpoint: "/v1/bypass-tools:linkzy/resolve",     resultKey: ["destinationUrl"] },
   { match: (u) => /socialwolvez\.com/i.test(u),     endpoint: "/v1/bypass-tools:socialwolvez/resolve",resultKey: ["finalUrl"] },
   { match: (u) => /mboost\.me/i.test(u),            endpoint: "/v1/bypass-tools:mboost/resolve",     resultKey: ["destinationUrl"] },
-  { match: (u) => /sub2unlock\.com/i.test(u),       endpoint: "/v1/bypass-tools:sub2unlock/bypass",  resultKey: ["destinationUrl"] },
+  { match: (u) => /sub2unlock\.(com|io|net)/i.test(u),       endpoint: "/v1/bypass-tools:sub2unlock/bypass",  resultKey: ["destinationUrl"] },
   { match: (u) => /sub4unlock\.co/i.test(u),        endpoint: "/v1/bypass-tools:sub4unlock/resolve", resultKey: ["finalUrl"] },
 
   // Linkvertise family
@@ -227,3 +227,4 @@ export async function POST(req) {
     return Response.json({ success: false, errorDetail: error.message }, { status: 500 });
   }
 }
+qq
