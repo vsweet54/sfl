@@ -72,10 +72,24 @@ function extractResult(data, resultKeys) {
   return null;
 }
 
-// Status / pesan yang dianggap "kuota habis" -> pindah ke key berikutnya
-const isExhausted = (status, raw) =>
-  [401, 402, 403, 429].includes(status) ||
-  /limit|quota|kuota|habis|exceed|insufficient|credit/i.test(raw);
+// Ambil pesan error dari respon provider (string pendek)
+function getErrMessage(data) {
+  if (typeof data === "string") return data.slice(0, 200);
+  const m = data?.message || data?.error?.message || data?.error || data?.detail || data?.data?.message;
+  return m ? String(typeof m === "string" ? m : JSON.stringify(m)).slice(0, 200) : "";
+}
+
+// Klasifikasi kegagalan:
+//  - "exhausted": kuota/limit key habis  -> coba key berikutnya
+//  - "auth"     : key ditolak (401/403)  -> coba key berikutnya
+//  - "other"    : error lain (link salah, endpoint error, dll) -> berhenti, tampilkan pesan asli
+// Regex hanya dicek ke PESAN error (bukan seluruh body) supaya kata "limit" di data tidak salah deteksi.
+function classify(status, msg) {
+  if (status === 402 || status === 429) return "exhausted";
+  if (/rate.?limit|too many requests|quota|kuota|out of credit|insufficient|exceeded/i.test(msg)) return "exhausted";
+  if (status === 401 || status === 403) return "auth";
+  return "other";
+}
 
 export async function POST(req) {
   try {
@@ -118,9 +132,15 @@ export async function POST(req) {
       );
     }
 
+    // Batas waktu total (maxDuration = 30s) supaya fungsi tidak mati sebelum membalas
+    const deadline = Date.now() + 27000;
+    const attempts = []; // ringkasan tiap percobaan (tanpa membocorkan API key)
     let last = null;
 
     for (let i = 0; i < apiKeys.length; i++) {
+      const remaining = deadline - Date.now();
+      if (remaining < 2500) break; // sisa waktu terlalu sedikit
+
       const apiKey = apiKeys[i];
 
       let response, rawText;
@@ -131,11 +151,13 @@ export async function POST(req) {
             "Content-Type": "application/json",
             "x-api-key": apiKey,
           },
-          signal: AbortSignal.timeout(25000),
+          signal: AbortSignal.timeout(Math.min(25000, remaining - 500)),
         });
         rawText = await response.text();
       } catch (err) {
-        last = { success: false, status: 502, data: err.message, keyUsed: i + 1, endpoint: rule.endpoint };
+        const timedOut = err?.name === "TimeoutError" || err?.name === "AbortError";
+        attempts.push({ key: i + 1, kind: timedOut ? "timeout" : "network", status: 0, message: err.message });
+        last = { success: false, status: timedOut ? 504 : 502, data: err.message, keyUsed: i + 1, endpoint: rule.endpoint };
         continue;
       }
 
@@ -148,17 +170,58 @@ export async function POST(req) {
 
       last = { success: response.ok, status: response.status, data, keyUsed: i + 1, endpoint: rule.endpoint };
 
-      if (response.ok || !isExhausted(response.status, rawText)) {
-        // Ekstrak finalUrl berdasarkan rule
+      // Sukses HTTP, tapi body bisa saja menandakan gagal (success:false)
+      const bodyFailed = response.ok && typeof data === "object" && data !== null && data.success === false;
+
+      if (response.ok && !bodyFailed) {
         const finalUrl = extractResult({ data }, rule.resultKey);
         return Response.json({ ...last, finalUrl });
       }
-      // Kuota habis -> lanjut key berikutnya
+
+      const msg = getErrMessage(data);
+      const kind = classify(response.ok ? 400 : response.status, msg);
+      attempts.push({ key: i + 1, kind, status: response.status, message: msg });
+
+      if (kind === "other") {
+        // Bukan masalah kuota -> jangan menyalahkan API key, tampilkan pesan asli provider
+        return Response.json(
+          {
+            ...last,
+            success: false,
+            message: msg || `Provider mengembalikan error (status ${response.status}).`,
+            attempts,
+          },
+          { status: response.ok ? 502 : response.status }
+        );
+      }
+      // exhausted / auth -> lanjut key berikutnya
+    }
+
+    // Semua percobaan gagal -> buat pesan sesuai penyebab sebenarnya
+    const kinds = attempts.map((a) => a.kind);
+    const summary = attempts.map((a) => `Key ${a.key}: ${a.kind}${a.status ? " " + a.status : ""}`).join(", ");
+    let message, status;
+
+    if (attempts.length === 0) {
+      message = "Waktu habis sebelum server sempat merespons. Coba lagi.";
+      status = 504;
+    } else if (kinds.every((k) => k === "exhausted")) {
+      message = "Semua API key habis atau terkena limit";
+      status = 429;
+    } else if (kinds.every((k) => k === "auth")) {
+      message = "API key ditolak provider (401/403). Cek ZAPI_KEY di environment.";
+      status = 401;
+    } else if (kinds.every((k) => k === "timeout" || k === "network")) {
+      message = "Server bypass tidak merespons (timeout). Coba lagi sebentar lagi.";
+      status = 504;
+    } else {
+      message = "Semua key gagal dipakai.";
+      status = last?.status || 502;
     }
 
     return Response.json(
-      { ...last, message: "Semua API key habis atau terkena limit" },
-      { status: last?.status || 429 }
+      { ...last, success: false, message: `${message} [${summary}]`, attempts },
+      { status }
     );
   } catch (error) {
     return Response.json({ success: false, errorDetail: error.message }, { status: 500 });
